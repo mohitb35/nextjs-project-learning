@@ -1,0 +1,6 @@
+# standard exclusions
+node_modules/
+
+# builds
+.next/
+.DS_Store
