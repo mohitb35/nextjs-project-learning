@@ -1,20 +1,37 @@
+import { useState } from 'react';
 import Button from '../ui/Button';
 import styles from './events-search.module.css';
 
-function EventsSearch() {
+function EventsSearch({ onSearch }) {
+	const [year, setYear] = useState('2021');
+	const [month, setMonth] = useState('1');
+
+	function submitHandler(event) {
+		event.preventDefault();
+		onSearch(year, month);
+	}
+
 	return (
-		<form className={styles.form}>
+		<form className={styles.form} onSubmit={submitHandler}>
 			<div className={styles.controls}>
 				<div className={styles.control}>
 					<label htmlFor="year">Year</label>
-					<select id="year">
+					<select
+						id="year"
+						value={year}
+						onChange={(e) => setYear(e.target.value)}
+					>
 						<option value="2021">2021</option>
 						<option value="2022">2022</option>
 					</select>
 				</div>
 				<div className={styles.control}>
 					<label htmlFor="month">Month</label>
-					<select id="month">
+					<select
+						id="month"
+						value={month}
+						onChange={(e) => setMonth(e.target.value)}
+					>
 						<option value="1">January</option>
 						<option value="2">February</option>
 						<option value="3">March</option>
