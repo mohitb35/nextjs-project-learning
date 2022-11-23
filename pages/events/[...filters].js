@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { getFilteredEvents } from '../../dummy-data';
 import EventList from '../../components/events/EventList';
+import ResultsTitle from '../../components/events/results-title';
 import { useEffect, useState } from 'react';
 
 function FilteredEventsPage() {
@@ -8,6 +9,7 @@ function FilteredEventsPage() {
 	const filterData = router.query.filters;
 	const [isLoading, setIsLoading] = useState(true);
 	const [events, setEvents] = useState([]);
+	const [date, setDate] = useState(null);
 	const [error, setError] = useState(null);
 
 	useEffect(() => {
@@ -24,15 +26,17 @@ function FilteredEventsPage() {
 			) {
 				setError('invalid date filters');
 			} else {
-				const events = getFilteredEvents({ year, month });
-				setEvents(events);
+				const _date = new Date(Number(year), Number(month - 1));
+				setDate(_date);
+				const _events = getFilteredEvents({ year, month });
+				setEvents(_events);
 			}
 		}
 	}, [filterData]);
 
 	return (
 		<div>
-			<h1>Filtered Events Page</h1>
+			<ResultsTitle date={date} />
 			{isLoading ? (
 				<p className="center">Loading...</p>
 			) : error ? (
