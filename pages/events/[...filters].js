@@ -1,51 +1,53 @@
-import { useRouter } from 'next/router';
-import { getFilteredEvents } from '../../dummy-data';
+import { getFilteredEvents } from '../../helpers/api-util';
 import EventList from '../../components/events/EventList';
 import ResultsTitle from '../../components/events/results-title';
-import { useEffect, useState } from 'react';
 
-function FilteredEventsPage() {
-	const router = useRouter();
-	const filterData = router.query.filters;
-	const [isLoading, setIsLoading] = useState(true);
-	const [events, setEvents] = useState([]);
-	const [date, setDate] = useState(null);
-	const [error, setError] = useState(null);
-
-	useEffect(() => {
-		if (filterData) {
-			setIsLoading(false);
-			const [year, month] = filterData;
-			if (
-				isNaN(year) ||
-				isNaN(month) ||
-				year < 2000 ||
-				year > 2025 ||
-				month < 1 ||
-				month > 12
-			) {
-				setError('invalid date filters');
-			} else {
-				const _date = new Date(Number(year), Number(month - 1));
-				setDate(_date);
-				const _events = getFilteredEvents({ year, month });
-				setEvents(_events);
-			}
-		}
-	}, [filterData]);
-
+function FilteredEventsPage(props) {
+	const date = new Date(props.date.year, props.date.month - 1);
 	return (
 		<div>
 			<ResultsTitle date={date} />
-			{isLoading ? (
-				<p className="center">Loading...</p>
-			) : error ? (
-				<p className="center">{error}</p>
+			{props.hasError ? (
+				<p className="center">{props.error}</p>
+			) : props.events.length > 0 ? (
+				<EventList events={props.events} />
 			) : (
-				<EventList events={events} />
+				<p className="center">No events found</p>
 			)}
 		</div>
 	);
+}
+
+export async function getServerSideProps(context) {
+	const filterData = context.params.filters;
+
+	if (filterData) {
+		const [year, month] = filterData;
+		if (
+			isNaN(year) ||
+			isNaN(month) ||
+			year < 2000 ||
+			year > 2025 ||
+			month < 1 ||
+			month > 12
+		) {
+			return {
+				props: {
+					hasError: true,
+					error: 'Invalid date filters',
+				},
+				/* notFound: true,
+				redirect: {
+					destination: '/error'
+				} */
+			};
+		} else {
+			const events = await getFilteredEvents({ year, month });
+			return {
+				props: { events, date: { month, year } },
+			};
+		}
+	}
 }
 
 export default FilteredEventsPage;
